@@ -1,3 +1,5 @@
+import argparse
+
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -78,12 +80,18 @@ def solutionplot(u_pred,X_u_train,u_train, T, X, t, x, usol):
 
 
 if __name__ == '__main__':
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('--ckpt', 
+                           type=str, 
+                           default='lightning_logs/version_0/checkpoints/epoch=0-step=250.ckpt',
+                           help='checkpoint path')
+    args = argparser.parse_args()
     # setup data
     dataset = PINN_dataset('Data/burgers_shock_mu_01_pi.mat', test=True)
     test_loader = utils.data.DataLoader(dataset)
     # init the model
     layers = np.array([2,20,20,20,20,20,20,20,20,1]) #8 hidden layers
-    model = Sequentialmodel.load_from_checkpoint('lightning_logs/version_0/checkpoints/epoch=0-step=250.ckpt', 
+    model = Sequentialmodel.load_from_checkpoint(args.ckpt, 
                                                 layers=layers, 
                                                 ub=dataset.ub, 
                                                 lb=dataset.lb)
