@@ -5,7 +5,7 @@ import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 from torch import utils
-import pytorch_lightning as pl
+import lightning.pytorch as pl
 
 from datasets.demo import PINN_dataset
 from models.sequence import Sequentialmodel

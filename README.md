@@ -1,13 +1,12 @@
 # batt
 
 ```bash
-pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple  # pip 设置清华源
-python -m venv .venv   # 创建环境
-.venv\Scripts\activate.bat  # cmd 激活环境
-# .venv\Scripts\Activate.ps1 # powershell 激活环境
+conda create -n batt python=3.9
+conda activate batt
 pip install numpy==1.26.4 # 安装 numpy
-pip3 install torch torchvision torchaudio    # 安装 pytorch（cpu版本）
-pip install pytorch-lightning tensorboard six scipy pyDOE matplotlib # 安装其他包
+conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.6 -c pytorch -c conda-forge    # 安装 pytorch
+pip install pytorch-lightning=2.2 tensorboard six scipy pyDOE matplotlib # 安装其他包
+pip install optuna optuna-integration lightning
 
 # 训练：
 python train.py

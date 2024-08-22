@@ -1,13 +1,14 @@
 import numpy as np
 import torch
 from torch import nn
-import pytorch_lightning as pl
+import lightning.pytorch as pl
 import torch.autograd as autograd  # 导入自动求导工具，用于计算梯度
 
 # 定义一个继承自pytorch_lightning的LightningModule的类Sequentialmodel
 class Sequentialmodel(pl.LightningModule):
-    def __init__(self, layers, ub, lb):
+    def __init__(self, lr, layers, ub, lb):
         super().__init__()  # 调用父类的__init__方法，进行初始化
+        self.lr = lr # 学习率
         self.layers = layers  # 保存神经网络的层结构
         self.u_b = torch.from_numpy(ub).float()  # 将上界ub从numpy数组转为torch张量，并转换为浮点型
         self.l_b = torch.from_numpy(lb).float()  # 将下界lb从numpy数组转为torch张量，并转换为浮点型
@@ -84,7 +85,15 @@ class Sequentialmodel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         X_u_train, u_train, X_f_train, f_hat = batch  # 解包batch数据
         loss = self.loss(X_u_train, u_train, X_f_train, f_hat)  # 计算总损失
+        self.log("train_loss", loss)  # 记录训练损失
         return loss  # 返回损失
+
+    # 定义验证步骤 （与测试步骤相同）
+    def validation_step(self, batch, batch_idx):
+        X_u_test_tensor, u = batch  # 解包测试数据
+        u_pred = self.forward(X_u_test_tensor)  # 进行前向传播，得到预测值
+        test_loss = (torch.norm((u - u_pred), 2) / torch.norm(u, 2)).mean()  # 计算验证损失
+        self.log("val_loss", test_loss)  # 记录验证损失
 
     # 定义测试步骤
     def test_step(self, batch, batch_idx):
@@ -95,7 +104,7 @@ class Sequentialmodel(pl.LightningModule):
 
     # 定义优化器配置
     def configure_optimizers(self):
-        optimizer = torch.optim.LBFGS(self.parameters(), lr=0.1, 
+        optimizer = torch.optim.LBFGS(self.parameters(), lr=self.lr,
                               max_iter=250, 
                               tolerance_grad=1e-05, 
                               tolerance_change=1e-09, 

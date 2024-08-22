@@ -1,8 +1,32 @@
 import numpy as np
 import scipy
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from pyDOE import lhs  # 导入拉丁超立方采样方法
+import lightning.pytorch as pl
+
+
+class PINN_DataModule(pl.LightningDataModule):
+    def __init__(self, filepath, N_u=100, N_f=10000):
+        super().__init__()
+        self.train_dataset = PINN_dataset(filepath, test=False, N_u=N_u, N_f=N_f)
+        self.test_dataset = PINN_dataset(filepath, test=True, N_u=N_u, N_f=N_f)
+        self.batch_size = 1
+
+    def train_dataloader(self) -> DataLoader:
+        return DataLoader(
+            self.train_dataset, batch_size=self.batch_size, num_workers=7, persistent_workers=True
+        )
+
+    def val_dataloader(self) -> DataLoader:
+        return DataLoader(
+            self.test_dataset, batch_size=self.batch_size, num_workers=7
+        )
+
+    def test_dataloader(self) -> DataLoader:
+        return DataLoader(
+            self.test_dataset, batch_size=self.batch_size, num_workers=7
+        )
 
 # 定义一个继承自PyTorch Dataset类的数据集类，用于PINN模型的训练和测试
 class PINN_dataset(Dataset):
@@ -75,4 +99,4 @@ class PINN_dataset(Dataset):
         return self.X_u_train, self.u_train, self.X_f_train, self.f_hat  # 返回训练数据
 
     def __len__(self):
-        return 250  # 返回数据集的大小，这里设定为250
+        return 10  # 返回数据集的大小，这里设定为10
