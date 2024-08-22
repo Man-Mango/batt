@@ -34,7 +34,7 @@ def objective(trial: optuna.trial.Trial) -> float:
         max_epochs=1,
         callbacks=[PyTorchLightningPruningCallback(trial, monitor="val_loss")],
     )
-    hyperparameters = dict(n_layers=n_layers, layer_dims=layers)
+    hyperparameters = dict(lr=lr, n_layers=n_layers, layer_dims=layers)
     trainer.logger.log_hyperparams(hyperparameters)
     trainer.fit(model, datamodule=datamodule)
 

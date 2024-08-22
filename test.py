@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -6,6 +7,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 from torch import utils
 import lightning.pytorch as pl
+import yaml
 
 from datasets.demo import PINN_dataset
 from models.sequence import Sequentialmodel
@@ -81,17 +83,30 @@ def solutionplot(u_pred,X_u_train,u_train, T, X, t, x, usol):
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
-    argparser.add_argument('--ckpt', 
+    argparser.add_argument('--hparams',
                            type=str, 
-                           default='lightning_logs/version_0/checkpoints/epoch=0-step=250.ckpt',
+                           default='lightning_logs/version_4/hparams.yaml',
+                           help='hparams path')
+
+    argparser.add_argument('--ckpt',
+                           type=str,
+                           default='lightning_logs/version_4/checkpoints/epoch=0-step=10.ckpt',
                            help='checkpoint path')
     args = argparser.parse_args()
+
+    # 打开并读取 YAML 文件
+    with open(args.hparams, "r") as file:
+        config = yaml.safe_load(file)
+
+    layers = config['layer_dims']
+    lr = config['lr']
+
     # setup data
     dataset = PINN_dataset('Data/burgers_shock_mu_01_pi.mat', test=True)
     test_loader = utils.data.DataLoader(dataset)
     # init the model
-    layers = np.array([2,20,20,20,20,20,20,20,20,1]) #8 hidden layers
-    model = Sequentialmodel.load_from_checkpoint(args.ckpt, 
+    model = Sequentialmodel.load_from_checkpoint(args.ckpt,
+                                                lr=lr,
                                                 layers=layers, 
                                                 ub=dataset.ub, 
                                                 lb=dataset.lb)

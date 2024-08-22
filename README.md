@@ -11,6 +11,6 @@ pip install optuna optuna-integration lightning
 # 训练：
 python train.py
 
-# 测试：
-python test.py --ckpt lightning_logs/version_0/checkpoints/epoch=0-step=250.ckpt
+# 测试：注意选择最好的 version
+python test.py --ckpt lightning_logs/version_0/checkpoints/epoch=0-step=10.ckpt --hparams lightning_logs/version_0/hparams.yaml
 ```
